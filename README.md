@@ -6,8 +6,8 @@
 ## Требования
 Перед тем как начать, убедитесь, что у вас установлены следующие инструменты:
 
-\.Docker
-\.Docker Compose
+- Docker
+- Docker Compose
 
 ---
 ## Настройка
@@ -47,4 +47,4 @@ python3 main.py consume --topic "hello_topic" --kafka "kafka_app_test-kafka-1:90
 ---
 ## Docker-образ
 Вы можете найти Docker-образ для этого проекта на Docker Hub:
-/. Docker Hub: https://hub.docker.com/r/mekkuyaku/kafka_app
+- Docker Hub: https://hub.docker.com/r/mekkuyaku/kafka_app
