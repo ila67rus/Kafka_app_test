@@ -1,17 +1,39 @@
 import click
 import uuid
 from confluent_kafka import Producer, Consumer, KafkaError, KafkaException
+from confluent_kafka.admin import NewTopic, AdminClient
 
 def produce_message(kafka_server, topic, message):
     producer = Producer({'bootstrap.servers': kafka_server})
+    
+    def on_delivery(err, msg):
+        if err:
+            print(f"Failed to deliver message: {err}")
+        else:
+            print(f"Message '{msg.value().decode('utf-8')}' sent to {msg.topic()}")
+
     try:
-        producer.produce(topic, value=message)
+        producer.produce(topic, value=message, callback=on_delivery)
         producer.flush()
-        print(f"Message '{message}' sent to topic '{topic}'")
     except Exception as e:
         print(f"Failed to produce message: {e}")
 
+def create_topic(kafka_server, topic):
+    conf = {'bootstrap.servers': kafka_server}
+    admin_client = AdminClient(conf)
+    metadata = admin_client.list_topics(timeout=10)
+    
+    if topic not in metadata.topics:
+        new_topic = NewTopic(topic, num_partitions=1, replication_factor=1)
+        try:
+            admin_client.create_topics([new_topic])
+            print(f"Topic '{topic}' created successfully.")
+        except Exception as e:
+            print(f"Error creating topic '{topic}': {e}")
+            raise
+
 def consume_messages(kafka_server, topic):
+    create_topic(kafka_server, topic)
     consumer = Consumer({
         'bootstrap.servers': kafka_server,
         'group.id': 'python_consumer_group_' + str(uuid.uuid4()),
@@ -56,3 +78,4 @@ def consume(topic, kafka):
 
 if __name__ == "__main__":
     cli()
+
